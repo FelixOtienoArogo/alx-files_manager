@@ -1,6 +1,8 @@
+import { ObjectId } from 'mongodb';
 import sha1 from 'sha1';
 import Queue from 'bull';
 import dbClient from '../utils/db';
+import userUtils from '../utils/user';
 
 const userQueue = new Queue('userQueue');
 
@@ -45,6 +47,21 @@ class UsersController {
     });
 
     return res.status(201).send(user);
+  }
+
+  static async getMe(req, res) {
+    const { userId } = await userUtils.getUserIdAndKey(req);
+    const user = await userUtils.getUser({ _id: ObjectId(userId) });
+
+    if (!user) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const foundUser = { id: user._id, email: user.email };
+    // delete foundUser._id;
+    // delete foundUser.password;
+
+    return res.status(200).send(foundUser);
   }
 }
 
