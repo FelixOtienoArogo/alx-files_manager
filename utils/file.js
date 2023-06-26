@@ -99,7 +99,7 @@ const fileUtils = {
     return file;
   },
 
-  async getFilesOfParentId(query) {
+   async getFilesOfParentId(query) {
     const collection = await dbClient.filesCollection();
     return collection.aggregate(query);
   },
