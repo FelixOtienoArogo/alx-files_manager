@@ -34,9 +34,9 @@ const fileUtils = {
 
       if (!file) {
         message = 'Parent not found';
-      } else if (file.type !== 'folder'){
-      message = 'Parent is not a folder';
-    }
+      } else if (file.type !== 'folder') {
+        message = 'Parent is not a folder';
+      }
     }
 
     const result = {
@@ -97,6 +97,11 @@ const fileUtils = {
     const collection = await dbClient.filesCollection();
     const file = await collection.findOne(query);
     return file;
+  },
+
+  async getFilesOfParentId(query) {
+    const collection = await dbClient.filesCollection();
+    return collection.aggregate(query);
   },
 };
 
