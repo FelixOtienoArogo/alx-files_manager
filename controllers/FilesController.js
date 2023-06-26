@@ -127,7 +127,6 @@ class FilesController {
     const fileCursor = await fileUtils.getFilesOfParentId(pipeline);
     const files = [];
 
-	  console.log(fileCursor);
     await fileCursor.forEach((doc) => {
       const document = fileUtils.processFile(doc);
       files.push(document);
