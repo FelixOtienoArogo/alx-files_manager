@@ -2,7 +2,7 @@ import { redisClient } from './redis';
 import dbClient from './db';
 
 const userUtils = {
-  async getUserIdAndKey(req) {
+  async getUserIdAndKeys(req) {
     const cred = { userId: null, key: null };
     const token = req.header('X-Token');
 
