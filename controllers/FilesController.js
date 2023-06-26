@@ -59,14 +59,14 @@ class FilesController {
 
   static async getShow(req, res) {
     const fileId = req.params.id;
-    const { userId } = await userUtils.getUserIdAndKey(req);
-    const user = await userUtils.getUser({ _id: ObjectId() });
+    const { userId } = await userUtils.getUserIdAndKeys(req);
+    const user = await userUtils.getUser({ _id: ObjectId(userId) });
 
     if (!user) {
-      return res.status(401).send('Unauthorized');
+      return res.status(401).send({ error: 'Unauthorized' });
     }
 
-    if (!basicUtils.isValidId(fileId) || !basicUtils.isValid(userId)) {
+    if (!basicUtils.isValidId(fileId) || !basicUtils.isValidId(userId)) {
       return res.status(404).send({ error: 'Not found' });
     }
 
@@ -85,7 +85,7 @@ class FilesController {
 
   static async getIndex(req, res) {
     const { userId } = await userUtils.getUserIdAndKeys(req);
-    const user = await userUtils.getUser({ _id: ObjectId(userId), });
+    const user = await userUtils.getUser({ _id: ObjectId(userId) });
 
     if (!user) {
       return res.status(401).send({ error: 'Unauthorized' });
@@ -118,12 +118,12 @@ class FilesController {
 
     const pipeline = [
       { $skip: page * 20 },
-      { $limit: 20, },
+      { $limit: 20 },
     ];
 
-    if (parentId === 0){
-     pipeline.push({ $match: {}});
-    }else{pipeline.push({ $match: { pipeline }})}
+    if (parentId === 0) {
+      pipeline.push({ $match: {} });
+    } else { pipeline.push({ $match: { parentId } }); }
     const fileCursor = await fileUtils.getFilesOfParentId(pipeline);
     const files = [];
 
