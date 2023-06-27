@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import dbClient from './db';
 import basicUtils from './basic';
+import userUtils from './user';
 
 const fileUtils = {
   async validateBody(req) {
@@ -102,6 +103,60 @@ const fileUtils = {
   async getFilesOfParentId(query) {
     const collection = await dbClient.filesCollection();
     return collection.aggregate(query);
+  },
+
+  async publishUn(req, check) {
+    const { id: fileId } = req.params;
+
+    if (!basicUtils.isValidId(fileId)) {
+      return { error: 'Unauthorized', code: 401 };
+    }
+
+    const { userId } = await userUtils.getUserIdAndKeys(req);
+
+    if (!basicUtils.isValidId(userId)) {
+      return { error: 'Unauthorized', code: 401 };
+    }
+
+    const user = await userUtils.getUser({ _id: ObjectId(userId) });
+
+    if (!user) {
+      return { error: 'Unauthorized', code: 401 };
+    }
+
+    const file = await this.getFile({
+      _id: ObjectId(fileId),
+      userId: ObjectId(userId),
+    });
+
+    if (!file) {
+      return { error: 'Not found', code: 404 };
+    }
+
+    const result = await this.updateFile(
+      {
+        _id: ObjectId(fileId),
+        userId: ObjectId(userId),
+      },
+      { $set: { isPublic: check } },
+    );
+
+    const {
+      _id: id, userId: resultUserId, name, type, isPublic, parentId,
+    } = result.value;
+    const updatedFile = {
+      id, userId: resultUserId, name, type, isPublic, parentId,
+    };
+
+    return { error: null, code: 200, updatedFile };
+  },
+
+  async updateFile(query, set) {
+    const collection = await dbClient.filesCollection();
+
+    const fileList = await collection.findOneAndUpdate(query, set, { returnOriginal: false });
+
+    return fileList;
   },
 };
 

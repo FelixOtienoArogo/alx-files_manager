@@ -119,6 +119,7 @@ class FilesController {
     const pipeline = [
       { $skip: page * 20 },
       { $limit: 20 },
+      { $sort: { _id: -1 } },
     ];
 
     if (parentId === 0) {
@@ -133,6 +134,24 @@ class FilesController {
     });
 
     return res.status(200).send(files);
+  }
+
+  static async putPublish(req, res) {
+    const { error, code, updatedFile } = await fileUtils.publishUn(req, true);
+
+    if (error) {
+      return res.status(code).send({ error });
+    }
+    return res.status(code).send(updatedFile);
+  }
+
+  static async putUnpublish(req, res) {
+    const { error, code, updatedFile } = await fileUtils.publishUn(req, false);
+
+    if (error) {
+      return res.status(code).send({ error });
+    }
+    return res.status(code).send(updatedFile);
   }
 }
 
