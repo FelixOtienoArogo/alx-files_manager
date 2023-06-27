@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import Queue from 'bull';
+import mime from 'mime-types';
 import userUtils from '../utils/user';
 import fileUtils from '../utils/file';
 import basicUtils from '../utils/basic';
@@ -152,6 +153,37 @@ class FilesController {
       return res.status(code).send({ error });
     }
     return res.status(code).send(updatedFile);
+  }
+
+  static async getFile(req, res) {
+    const { userId } = await userUtils.getUserIdAndKeys(req);
+    const { id: fileId } = req.params;
+    const size = req.query.size || 0;
+
+    if (!basicUtils.isValidId(fileId)) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    const file = await fileUtils.getFile({ _id: ObjectId(fileId) });
+
+    if (!file || !fileUtils.isOwnerAndPublic(file, userId)) {
+      return res.status(404).send({ error: 'Not found' });
+    }
+
+    if (file.type === 'folder') {
+      return res.status(400).send({ error: "A folder doesn't have content" });
+    }
+
+    const { error, code, data } = await fileUtils.getFileData(file, size);
+
+    if (error) {
+      return res.status(code).send({ error });
+    }
+
+    const mimeType = mime.contentType(file.name);
+    res.setHeader('Content-Type', mimeType);
+
+    return res.status(200).send(data);
   }
 }
 
