@@ -35,9 +35,9 @@ const fileUtils = {
 
       if (!file) {
         message = 'Parent not found';
-      }/* else if (file.type !== 'folder') {
+      } else if (file.type !== 'folder') {
         message = 'Parent is not a folder';
-      }*/
+      }
     }
 
     const result = {

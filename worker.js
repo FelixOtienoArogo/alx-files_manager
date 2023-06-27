@@ -50,3 +50,23 @@ fileQueue.process(async (job) => {
     }
   });
 });
+
+userQueue.process(async (job) => {
+  const { userId } = job.data;
+
+  if (!userId) {
+    console.log('Missing userId');
+    throw new Error('Missing userId');
+  }
+
+  if (!basicUtils.isValidId(userId)) {
+    throw new Error('User not found');
+  }
+
+  const user = await userUtils.getUser({ _id: ObjectId(userId) });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+  console.log(`Welcome ${user.email}!`);
+});
